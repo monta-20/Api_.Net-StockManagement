@@ -1,24 +1,22 @@
-using System;
+
 using Microsoft.EntityFrameworkCore;
+using WebApplication1.Data; // Assurez-vous que ce namespace est correct
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Lire la chaîne de connexion depuis appsettings.json
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+// Enregistrer le DbContext avec SQLite
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite(connectionString));
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Register DbContext
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-// Or for SQLite:
-// options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
-);
-
-// Configure the HTTP request pipeline.
+// Pipeline HTTP
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -26,7 +24,5 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();

@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using WebApplication1.Models; // Adapté à votre projet
 
-
-namespace EfDemo.Data
+namespace WebApplication1.Data
 {
 	public class AppDbContext : DbContext
 	{
@@ -9,6 +9,6 @@ namespace EfDemo.Data
 
 		public DbSet<Stock> Stock { get; set; }
 
-		public Dbset<Comments> Comments { get; set; }
+		public DbSet<Comments> Comments { get; set; }
 	}
 }
