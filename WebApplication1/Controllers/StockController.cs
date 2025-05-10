@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WebApplication1.Data;
-
+using WebApplication1.Mappers;
 namespace WebApplication1.Controllers
     
 {
@@ -16,7 +16,9 @@ namespace WebApplication1.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            var stocks = _context.Stock.ToList();
+            var stocks = _context.Stock.ToList()
+            .Select(s => s.ToStockDto());
+
             return Ok(stocks);
         }
         [HttpGet("{id}")]
@@ -27,7 +29,7 @@ namespace WebApplication1.Controllers
             {
                 return NotFound();
             }
-            return Ok(stock);
+            return Ok(stock.ToStockDto());
 
         }
     }
