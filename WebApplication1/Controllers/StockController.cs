@@ -24,12 +24,12 @@ namespace WebApplication1.Controllers
             var stocks = await _stockRepo.GetAllAsync(); 
             var stockDto = stocks.Select(s => s.ToStockDto());
 
-            return Ok(stocks);
+            return Ok(stockDto);
         }
         [HttpGet("{id}")]
         public async Task <IActionResult> GetById([FromRoute] int id)
         {
-            var stock = await _context.Stock.FindAsync(id);
+            var stock = await _stockRepo.GetByIdAsync(id);
             if (stock == null)
             {
                 return NotFound();
@@ -41,34 +41,28 @@ namespace WebApplication1.Controllers
         public async Task<IActionResult> Create([FromBody] CreateStockRequestDto stockDto)
         {
             var stockModel = stockDto.ToStockFromCreateDto();
-            await _context.Stock.AddAsync(stockModel);
-            await _context.SaveChangesAsync();
+            await _stockRepo.CreateAsync(stockModel);
             return CreatedAtAction(nameof(GetById), new { id = stockModel.Id } , stockModel.ToStockDto());
         }
         [HttpPut("{id}")]
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateStockRequestDto updateDto)
         {
-            var stock = await _context.Stock.FirstOrDefaultAsync(x => x.Id == id); 
+            var stock = await _stockRepo.UpdateAsync(id, updateDto); ; 
             if(stock == null)
             {
                 return NotFound();
             }
-            stock.ToStockFromUpdateDteo(updateDto);
-            await _context.SaveChangesAsync();
-
             return NoContent(); 
         }
         [HttpDelete]
         [Route("{id}")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
-            var stockModel = await _context.Stock.FirstOrDefaultAsync(x => x.Id == id);
+            var stockModel = await _stockRepo.DeleteAsync(id);
             if(stockModel == null)
             {
                 return NotFound();
             }
-            _context.Stock.Remove(stockModel);
-            await _context.SaveChangesAsync();
             return NoContent();
         }
     }
