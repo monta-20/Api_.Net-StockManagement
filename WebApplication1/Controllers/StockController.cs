@@ -41,6 +41,32 @@ namespace WebApplication1.Controllers
             _context.SaveChanges();
             return CreatedAtAction(nameof(GetById), new { id = stockModel.Id } , stockModel.ToStockDto());
         }
+        [HttpPut("{id}")]
+        public IActionResult Update([FromRoute] int id, [FromBody] UpdateStockRequestDto updateDto)
+        {
+            var stock = _context.Stock.Find(id); 
+            if(stock == null)
+            {
+                return NotFound();
+            }
+            stock.ToStockFromUpdateDteo(updateDto);
+            _context.SaveChanges();
+
+            return NoContent(); 
+        }
+        [HttpDelete]
+        [Route("{id}")]
+        public IActionResult Delete([FromRoute] int id)
+        {
+            var stockModel = _context.Stock.FirstOrDefault(x => x.Id == id);
+            if(stockModel == null)
+            {
+                return NotFound();
+            }
+            _context.Stock.Remove(stockModel);
+            _context.SaveChanges();
+            return NoContent();
+        }
     }
 
 

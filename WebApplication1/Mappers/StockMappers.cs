@@ -9,6 +9,7 @@ public static class StockMappers
         return new StockDto
         {
             Id = stockModel.Id,
+            Symbol = stockModel.Symbol,
             CompanyName = stockModel.CompanyName,
             purchase = stockModel.purchase,
             LastDiv = stockModel.LastDiv,
@@ -30,4 +31,15 @@ public static class StockMappers
         };
 
     }
+
+    public static void ToStockFromUpdateDteo(this Stock stock, UpdateStockRequestDto dto)
+    {
+        stock.Symbol = dto.Symbol;
+        stock.CompanyName = dto.CompanyName;
+        stock.purchase = dto.purchase;
+        stock.LastDiv = dto.LastDiv;
+        stock.Industry = dto.Industry;
+        stock.MarketCap = dto.MarketCap;
+    }
+
 }
