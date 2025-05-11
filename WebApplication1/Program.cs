@@ -1,6 +1,8 @@
 
 using Microsoft.EntityFrameworkCore;
-using WebApplication1.Data; // Assurez-vous que ce namespace est correct
+using WebApplication1.Data;
+using WebApplication1.Interfaces;
+using WebApplication1.Repository; // Assurez-vous que ce namespace est correct
 var builder = WebApplication.CreateBuilder(args);
 
 // Lire la chaîne de connexion depuis appsettings.json
@@ -13,6 +15,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddControllers(); // for add Controllers
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+//Repository Pattern , DI
+builder.Services.AddScoped<IStockRepository , StockRepository>();
 
 var app = builder.Build();
 

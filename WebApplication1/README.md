@@ -1,63 +1,119 @@
-﻿📩 POST Method in ASP.NET Core
-🧠 What is a POST Method?
-The POST method is used to send data from the client to the server—commonly to create a new resource (e.g., insert a new row into the database). In ASP.NET Core Web API, this is done via the [HttpPost] attribute in a controller.
+﻿🏗️ Repository Pattern & Dependency Injection in ASP.NET Core
+📘 What is the Repository Pattern?
+The Repository Pattern is a design pattern that separates the data access logic from the business logic in your application.
 
-🧱 Typical Flow
-Client sends a JSON object (like from a frontend or Postman).
+It acts as a mediator between the database layer and the controller, offering a clean and abstract way to interact with data.
 
-Controller receives the object and maps it to a DTO.
+✅ Why Use It?
+Keeps controller logic clean.
 
-The server maps the DTO to a Model (Entity) and saves it to the Database.
+Makes the data access layer reusable.
 
-🔄 Example Flow: Adding a New Stock
-1. 📥 JSON from the Client
-json
-Copier
-Modifier
-{
-  "symbol": "NFLX",
-  "companyName": "Netflix Inc.",
-  "purchase": 402.15
-}
-2. 🔐 StockDto.cs
+Simplifies testing and maintenance.
+
+Supports loose coupling and separation of concerns.
+
+🔧 Implementing the Repository Pattern
+1. 🧱 Define an Interface
 csharp
-Copier
-Modifier
-public class CreateStockDto
+
+// Repositories/IStockRepository.cs
+public interface IStockRepository
 {
-    public string Symbol { get; set; }
-    public string CompanyName { get; set; }
-    public decimal Purchase { get; set; }
+    Task<IEnumerable<Stock>> GetAllAsync();
+    Task<Stock?> GetByIdAsync(int id);
+    Task<Stock> AddAsync(Stock stock);
+    Task<Stock?> UpdateAsync(int id, Stock stock);
+    Task<bool> DeleteAsync(int id);
 }
-3. 🧰 Mapper: StockMappers.cs
+2. 🧰 Implement the Interface
 csharp
-Copier
-Modifier
-public static Stock ToStockFromDto(this CreateStockDto dto)
+
+// Repositories/StockRepository.cs
+public class StockRepository : IStockRepository
 {
-    return new Stock
+    private readonly ApplicationDbContext _context;
+
+    public StockRepository(ApplicationDbContext context)
     {
-        Symbol = dto.Symbol,
-        CompanyName = dto.CompanyName,
-        Purchase = dto.Purchase
-    };
-}
-4. 🌐 Controller
-csharp
-Copier
-Modifier
-[HttpPost]
-public IActionResult Create([FromBody] CreateStockDto stockDto)
-{
-    var stock = stockDto.ToStockFromDto();
-    _context.Stock.Add(stock);
-    _context.SaveChanges();
+        _context = context;
+    }
 
-    return CreatedAtAction(nameof(GetById), new { id = stock.Id }, stock.ToStockDto());
+    public async Task<IEnumerable<Stock>> GetAllAsync()
+    {
+        return await _context.Stock.ToListAsync();
+    }
+
+    public async Task<Stock?> GetByIdAsync(int id)
+    {
+        return await _context.Stock.FindAsync(id);
+    }
+
+    public async Task<Stock> AddAsync(Stock stock)
+    {
+        _context.Stock.Add(stock);
+        await _context.SaveChangesAsync();
+        return stock;
+    }
+
+    public async Task<Stock?> UpdateAsync(int id, Stock stock)
+    {
+        var existing = await _context.Stock.FindAsync(id);
+        if (existing == null) return null;
+
+        existing.Symbol = stock.Symbol;
+        existing.CompanyName = stock.CompanyName;
+        // ... update other fields
+
+        await _context.SaveChangesAsync();
+        return existing;
+    }
+
+    public async Task<bool> DeleteAsync(int id)
+    {
+        var stock = await _context.Stock.FindAsync(id);
+        if (stock == null) return false;
+
+        _context.Stock.Remove(stock);
+        await _context.SaveChangesAsync();
+        return true;
+    }
 }
-✅ Summary
-Component	                  Role
-DTO	             Defines the shape of the data sent
-Mapper	         Converts DTO to Entity (and vice versa)
-Controller	     Receives data, saves to database
-POST Endpoint	 Adds a new resource (e.g., Stock)
+💉 Dependency Injection (DI)
+📘 What is DI?
+Dependency Injection is a technique where an object’s dependencies are provided externally, rather than created inside the object. ASP.NET Core has built-in support for DI.
+
+🔌 Register the Repository in Program.cs
+csharp
+
+builder.Services.AddScoped<IStockRepository, StockRepository>();
+This tells ASP.NET Core to inject the StockRepository wherever IStockRepository is required.
+
+🌐 Use in Controller
+csharp
+
+[ApiController]
+[Route("api/[controller]")]
+public class StockController : ControllerBase
+{
+    private readonly IStockRepository _stockRepository;
+
+    public StockController(IStockRepository stockRepository)
+    {
+        _stockRepository = stockRepository;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var stocks = await _stockRepository.GetAllAsync();
+        return Ok(stocks);
+    }
+}
+🧠 Summary
+Concept	                                             Role
+Repository Pattern	              Decouples business logic from data access
+Interface	                      Defines contracts for repositories
+Implementation	                  Contains real EF Core logic
+DI Container	                  Manages and injects services (like repositories)
+Controller	                      Uses injected repository instead of direct DB access
