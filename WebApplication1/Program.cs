@@ -17,7 +17,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 //Repository Pattern , DI
 builder.Services.AddScoped<IStockRepository , StockRepository>();
-
+builder.Services.AddScoped<ICommentRepository , CommentRepository>();
 var app = builder.Build();
 
 // Pipeline HTTP
