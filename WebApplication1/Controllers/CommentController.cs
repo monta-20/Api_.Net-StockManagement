@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using WebApplication1.DTOs.Comment;
 using WebApplication1.Interfaces;
 using WebApplication1.Mappers;
 
@@ -9,9 +10,11 @@ namespace WebApplication1.Controllers
     public class CommentController:ControllerBase
     {
         private readonly ICommentRepository _commentRepo;
-        public CommentController(ICommentRepository commentRepo)
+        private readonly IStockRepository _stockRepo; 
+        public CommentController(ICommentRepository commentRepo , IStockRepository stockRepo)
         {
             _commentRepo = commentRepo;
+            _stockRepo = stockRepo;
         }
         [HttpGet]
         public async Task<IActionResult> GetAll()
@@ -29,6 +32,18 @@ namespace WebApplication1.Controllers
                 return NotFound();
             }
             return Ok(comment.ToCommentDto());
+        }
+        [HttpPost("{stockId}")] 
+        public async Task<IActionResult> Create([FromRoute] int stockId  , CreateCommentDto commentDto , IStockRepository IStockRepo )
+        {
+            if (!await IStockRepo.StockExists(stockId))
+            {
+                return BadRequest("stock does not exist");
+            }
+            var commentModel = commentDto.ToCommentFromCreateDto(stockId);
+            await _commentRepo.CreateAsync(commentModel);
+            return CreatedAtAction(nameof(GetById) , new {id = commentModel} ,commentModel.ToCommentDto() );
+
         }
     }
 }

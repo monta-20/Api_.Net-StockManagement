@@ -7,6 +7,7 @@ namespace WebApplication1.Interfaces
         Task<List<Comments>> GetAllAsync();
         Task<Comments?> GetByIdAsync(int id);
 
+        Task<Comments?> CreateAsync(Comments commentModel); 
 
     }
 }
