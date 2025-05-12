@@ -18,5 +18,10 @@ namespace WebApplication1.Repository
 
             return await _context.Comments.ToListAsync(); 
         }
+
+        public async Task<Comments?> GetByIdAsync(int id)
+        {
+            return await _context.Comments.FindAsync(id);
+        }
     }
 }

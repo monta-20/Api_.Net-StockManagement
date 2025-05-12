@@ -4,7 +4,9 @@ namespace WebApplication1.Interfaces
 {
     public interface ICommentRepository
     {
-        Task<List<Comments>> GetAllAsync(); 
+        Task<List<Comments>> GetAllAsync();
+        Task<Comments?> GetByIdAsync(int id);
+
 
     }
 }

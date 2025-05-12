@@ -1,119 +1,71 @@
-﻿🏗️ Repository Pattern & Dependency Injection in ASP.NET Core
-📘 What is the Repository Pattern?
-The Repository Pattern is a design pattern that separates the data access logic from the business logic in your application.
+﻿Pour effectuer une requête GET avec Include() en ASP.NET Core (avec Entity Framework Core), cela permet de charger les données liées (relationnelles) — par exemple : les commentaires d’un stock (Stock → Comments).
 
-It acts as a mediator between the database layer and the controller, offering a clean and abstract way to interact with data.
-
-✅ Why Use It?
-Keeps controller logic clean.
-
-Makes the data access layer reusable.
-
-Simplifies testing and maintenance.
-
-Supports loose coupling and separation of concerns.
-
-🔧 Implementing the Repository Pattern
-1. 🧱 Define an Interface
+✅ Exemple concret : GET un Stock avec ses commentaires
+1. 🧱 Modèle Stock
 csharp
 
-// Repositories/IStockRepository.cs
-public interface IStockRepository
+public class Stock
 {
-    Task<IEnumerable<Stock>> GetAllAsync();
-    Task<Stock?> GetByIdAsync(int id);
-    Task<Stock> AddAsync(Stock stock);
-    Task<Stock?> UpdateAsync(int id, Stock stock);
-    Task<bool> DeleteAsync(int id);
+    public int Id { get; set; }
+    public string Symbol { get; set; }
+    public ICollection<Comment> Comments { get; set; }
 }
-2. 🧰 Implement the Interface
+2. 🧱 Modèle Comment
 csharp
 
-// Repositories/StockRepository.cs
-public class StockRepository : IStockRepository
+public class Comment
 {
-    private readonly ApplicationDbContext _context;
-
-    public StockRepository(ApplicationDbContext context)
-    {
-        _context = context;
-    }
-
-    public async Task<IEnumerable<Stock>> GetAllAsync()
-    {
-        return await _context.Stock.ToListAsync();
-    }
-
-    public async Task<Stock?> GetByIdAsync(int id)
-    {
-        return await _context.Stock.FindAsync(id);
-    }
-
-    public async Task<Stock> AddAsync(Stock stock)
-    {
-        _context.Stock.Add(stock);
-        await _context.SaveChangesAsync();
-        return stock;
-    }
-
-    public async Task<Stock?> UpdateAsync(int id, Stock stock)
-    {
-        var existing = await _context.Stock.FindAsync(id);
-        if (existing == null) return null;
-
-        existing.Symbol = stock.Symbol;
-        existing.CompanyName = stock.CompanyName;
-        // ... update other fields
-
-        await _context.SaveChangesAsync();
-        return existing;
-    }
-
-    public async Task<bool> DeleteAsync(int id)
-    {
-        var stock = await _context.Stock.FindAsync(id);
-        if (stock == null) return false;
-
-        _context.Stock.Remove(stock);
-        await _context.SaveChangesAsync();
-        return true;
-    }
+    public int Id { get; set; }
+    public string Title { get; set; }
+    public string Content { get; set; }
+    public DateTime CreatedOn { get; set; }
+    public int StockId { get; set; }
+    public Stock Stock { get; set; }
 }
-💉 Dependency Injection (DI)
-📘 What is DI?
-Dependency Injection is a technique where an object’s dependencies are provided externally, rather than created inside the object. ASP.NET Core has built-in support for DI.
-
-🔌 Register the Repository in Program.cs
+3. 🌐 Méthode GET dans le controller
 csharp
 
-builder.Services.AddScoped<IStockRepository, StockRepository>();
-This tells ASP.NET Core to inject the StockRepository wherever IStockRepository is required.
-
-🌐 Use in Controller
-csharp
-
-[ApiController]
-[Route("api/[controller]")]
-public class StockController : ControllerBase
+[HttpGet("{id}")]
+public async Task<IActionResult> GetById(int id)
 {
-    private readonly IStockRepository _stockRepository;
+    var stock = await _context.Stock
+        .Include(s => s.Comments) // 👈 Charger les commentaires liés
+        .FirstOrDefaultAsync(s => s.Id == id);
 
-    public StockController(IStockRepository stockRepository)
-    {
-        _stockRepository = stockRepository;
-    }
+    if (stock == null)
+        return NotFound();
 
-    [HttpGet]
-    public async Task<IActionResult> GetAll()
-    {
-        var stocks = await _stockRepository.GetAllAsync();
-        return Ok(stocks);
-    }
+    return Ok(stock);
 }
-🧠 Summary
-Concept	                                             Role
-Repository Pattern	              Decouples business logic from data access
-Interface	                      Defines contracts for repositories
-Implementation	                  Contains real EF Core logic
-DI Container	                  Manages and injects services (like repositories)
-Controller	                      Uses injected repository instead of direct DB access
+🎯 Résultat
+Tu reçois dans le JSON le stock et la liste de ses commentaires :
+
+json
+
+{
+  "id": 1,
+  "symbol": "AAPL",
+  "comments": [
+    {
+      "id": 1,
+      "title": "Bon investissement",
+      "content": "Croissance stable",
+      "createdOn": "2024-05-10T12:00:00"
+    }
+  ]
+}
+
+Install : NewtonSoft.json , Microsoft.AspNetCore.MVc.NewtonSoft.json
+
+| Nom                                       | Utilisation                                              | Projet                |
+| ----------------------------------------- | -------------------------------------------------------- | --------------------- |
+| `Newtonsoft.Json`                         | Sérialisation JSON (librairie)                           | Tous types de projets |
+| `Microsoft.AspNetCore.Mvc.NewtonsoftJson` | Intégration de `Newtonsoft.Json` dans ASP.NET Core (API) | Projets Web/API       |
+
+
+Add program.cs :
+
+builder.Services.AddControllers().AddNewtonsoftJson(options =>
+{
+    options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+});

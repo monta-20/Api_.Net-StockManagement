@@ -1,5 +1,6 @@
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using WebApplication1.Data;
 using WebApplication1.Interfaces;
 using WebApplication1.Repository; // Assurez-vous que ce namespace est correct
@@ -15,6 +16,13 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddControllers(); // for add Controllers
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddControllers().AddNewtonsoftJson(options =>
+{
+    options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+});
+
+
 //Repository Pattern , DI
 builder.Services.AddScoped<IStockRepository , StockRepository>();
 builder.Services.AddScoped<ICommentRepository , CommentRepository>();
