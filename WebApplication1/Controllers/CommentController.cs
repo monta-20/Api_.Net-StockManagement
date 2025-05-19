@@ -19,6 +19,10 @@ namespace WebApplication1.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             var comments = await _commentRepo.GetAllAsync();
             var commentDto = comments.Select(s => s.ToCommentDto()); 
             return Ok(commentDto);
@@ -36,6 +40,10 @@ namespace WebApplication1.Controllers
         [HttpPost("{stockId}")] 
         public async Task<IActionResult> Create([FromRoute] int stockId  , CreateCommentDto commentDto , IStockRepository IStockRepo )
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             if (!await IStockRepo.StockExists(stockId))
             {
                 return BadRequest("stock does not exist");
@@ -49,6 +57,10 @@ namespace WebApplication1.Controllers
         [Route("{id}")]
         public async Task<IActionResult> update([FromRoute] int id , [FromBody] UpdateCommentRequestDto updateDto)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             var comment = await _commentRepo.UpdateAsync(id, updateDto.ToCommentFromUpdate(id));
             if (comment == null)
             {
@@ -60,6 +72,10 @@ namespace WebApplication1.Controllers
         [Route("{id}")]
         public async Task<IActionResult> Delete([FromRoute] int id )
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             var commentModel = await _commentRepo.DeleteAsync(id);
             if(commentModel == null)
             {
