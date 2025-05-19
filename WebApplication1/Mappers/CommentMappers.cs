@@ -6,11 +6,8 @@ namespace WebApplication1.Mappers
 {
     public static class CommentMappers
     {
-        public static CommentDto? ToCommentDto(this Comments? commentModel)
+        public static CommentDto ToCommentDto(this Comments commentModel)
         {
-            if (commentModel == null)
-                return null;
-
             return new CommentDto
             {
                 Id = commentModel.Id,
@@ -20,7 +17,6 @@ namespace WebApplication1.Mappers
                 StockId = commentModel.StockId,
             };
         }
-
 
         public static Comments ToCommentFromCreateDto(this CreateCommentDto commentModel , int stockId )
         {

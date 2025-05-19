@@ -9,6 +9,7 @@ namespace WebApplication1.Interfaces
 
         Task<Comments?> CreateAsync(Comments commentModel); 
         Task<Comments?> UpdateAsync(int id , Comments commentModel);
+        Task<Comments?> DeleteAsync(int id);
 
     }
 }

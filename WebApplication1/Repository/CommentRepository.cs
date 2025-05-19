@@ -21,6 +21,18 @@ namespace WebApplication1.Repository
             return commentModel;
         }
 
+        public async Task<Comments?> DeleteAsync(int id)
+        {
+            var commentModel = await _context.Comments.FirstOrDefaultAsync(x => x.Id == id);
+            if(commentModel == null)
+            {
+                return null;
+            }
+            _context.Comments.Remove(commentModel);
+            await _context.SaveChangesAsync();
+            return commentModel;
+        }
+
         public async Task<List<Comments>> GetAllAsync()
         {
 
@@ -35,7 +47,7 @@ namespace WebApplication1.Repository
         public async Task<Comments?> UpdateAsync(int id, Comments commentModel)
         {
             var existingComment = await _context.Comments.FindAsync(id);
-            if (existingComment != null)
+            if (existingComment == null)
             {
                 return null; 
             }
