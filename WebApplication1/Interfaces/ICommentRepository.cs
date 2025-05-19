@@ -8,6 +8,7 @@ namespace WebApplication1.Interfaces
         Task<Comments?> GetByIdAsync(int id);
 
         Task<Comments?> CreateAsync(Comments commentModel); 
+        Task<Comments?> UpdateAsync(int id , Comments commentModel);
 
     }
 }
